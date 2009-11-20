@@ -42,46 +42,9 @@ DEB_HOST_ARCH_CPU   ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_CPU)
 CONFIGURE_FLAGS = \
 	--prefix=/usr \
 	--confdir=/etc/mplayer \
-	--enable-xvmc \
-	--enable-menu \
 	--disable-arts \
-	--enable-largefiles \
 	--language=all \
 	$(archconf)
-
-ifeq ($(DEB_HOST_ARCH),i386)
-#configure optimizes for the cpu detected at ./configure time
-#in order to build a generic binary, avoid non-standard opcodes through gcc
-  archconf += --target=i586-linux
-  CONFIGURE_FLAGS += --enable-runtime-cpudetection
-endif
-ifeq ($(DEB_HOST_ARCH),amd64)
-  CONFIGURE_FLAGS += --enable-runtime-cpudetection
-endif
-ifeq ($(DEB_HOST_ARCH),kfreebsd-i386)
-  CONFIGURE_FLAGS += --enable-runtime-cpudetection
-endif
-ifeq ($(DEB_HOST_ARCH),kfreebsd-amd64)
-  CONFIGURE_FLAGS += --enable-runtime-cpudetection
-endif
-ifeq ($(DEB_HOST_ARCH),powerpc)
-  CONFIGURE_FLAGS += --enable-runtime-cpudetection
-endif
-ifeq ($(DEB_HOST_ARCH),alpha)
-#Avoid high optimization through gcc.
-# see http://permalink.gmane.org/gmane.linux.debian.ports.alpha/7295
-  archconf += --target=alpha_ev5-linux
-endif
-
-# generate debugging symbols for mplayer-dbg for all archs but mipsen,
-# see bug #520113
-ifeq (,$(findstring mips,$(DEB_HOST_ARCH)))
-CONFIGURE_FLAGS += --enable-debug
-endif
-
-ifeq (linux,$(DEB_HOST_ARCH_OS))
-    CONFIGURE_FLAGS += --enable-mga --enable-3dfx --enable-tdfxfb
-endif
 
 ifneq (,$(DEB_EXTRA_CONFIGURE_FLAGS))
     CONFIGURE_FLAGS += $(DEB_EXTRA_CONFIGURE_FLAGS)
@@ -95,7 +58,6 @@ build-arch:
 	dh_prep -a
 	$(MAKE) -f debian/rules debian/mplayer/usr/bin/mplayer
 	$(MAKE) -f debian/rules debian/mencoder/usr/bin/mencoder
-	$(MAKE) -f debian/rules debian/mplayer-gui/usr/bin/gmplayer
 
 # build non-gui version
 # & mencoder
@@ -138,12 +100,10 @@ DOCS/HTML/en/index.html:
 build-indep:
 	dh_testdir
 	dh_prep -i
-	test -f DOCS/HTML/en/index.html || $(MAKE) -f debian/rules DOCS/HTML/en/index.html
 
 # commands to compile the documentation
 install-indep: build-indep
 	dh_installchangelogs -i
-	dh_installdocs -i
 	dh_compress -i
 	dh_fixperms -i
 
@@ -165,7 +125,6 @@ binary-arch: install-arch
 	dh_testroot
 	dh_install -a
 	dh_installchangelogs -a
-	dh_installdocs -a
 	dh_installexamples -a
 	dh_installmenu -a
 	dh_installmime -a

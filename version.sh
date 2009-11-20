@@ -5,7 +5,7 @@ test "$1" && extra="-$1"
 # Extract revision number from file used by daily tarball snapshots
 # or from the places different Subversion versions have it.
 svn_revision=$(cat snapshot_version 2> /dev/null)
-test $svn_revision || svn_revision=$(LC_ALL=C svn info 2> /dev/null | grep Revision | cut -d' ' -f2)
+test $svn_revision || svn_revision=$(LC_ALL=C git log -1 origin/master 2>/dev/null | sed -n '/git-svn-id/s/.*@\([0-9]\+\) .*/\1/p')
 test $svn_revision || svn_revision=$(grep revision .svn/entries 2>/dev/null | cut -d '"' -f2)
 test $svn_revision || svn_revision=$(sed -n -e '/^dir$/{n;p;q;}' .svn/entries 2>/dev/null)
 test $svn_revision && svn_revision=SVN-r$svn_revision
